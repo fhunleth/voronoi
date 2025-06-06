@@ -116,10 +116,22 @@ button:hover {
 }
 
 .point {
-    fill: #e74c3c;
-    stroke: white;
-    stroke-width: 1;
     cursor: pointer;
+}
+
+.point-label {
+    user-select: none;
+    pointer-events: none;
+}
+
+.cell-label {
+    pointer-events: none;
+    user-select: none;
+    text-shadow: 0 0 3px white;
+}
+
+.connector {
+    pointer-events: none;
 }
 
 footer {

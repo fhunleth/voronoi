@@ -150,18 +150,45 @@ document.addEventListener('DOMContentLoaded', function() {
         // For each point, create a cell polygon using a convex hull
         Object.keys(cellsByPoint).forEach(pointIndex => {
             const pixelPoints = cellsByPoint[pointIndex];
+            const pointIdx = parseInt(pointIndex, 10);
             
             // Use D3's polygon hull to create a convex hull around the points
             if (pixelPoints.length > 2) {
                 const hull = d3.polygonHull(pixelPoints);
                 
                 if (hull) {
+                    // Calculate centroid for label placement
+                    const centroid = getCentroid(hull);
+                    
                     // Add the cell polygon to the diagram
-                    cellsGroup.append('polygon')
+                    const cell = cellsGroup.append('g')
+                        .attr('class', 'voronoi-cell-group')
+                        .attr('data-point', pointIdx + 1);
+                        
+                    // Add the polygon
+                    cell.append('polygon')
                         .attr('class', 'voronoi-cell')
                         .attr('points', hull.map(p => p.join(',')).join(' '))
-                        .style('fill', getColorForIndex(parseInt(pointIndex, 10)))
-                        .style('opacity', '0.4');
+                        .style('fill', getColorForIndex(pointIdx))
+                        .style('opacity', '0.4')
+                        .style('stroke', getColorForIndex(pointIdx))
+                        .style('stroke-width', 1)
+                        .style('stroke-opacity', 0.7);
+                        
+                    // Add connecting line from point to cell
+                    if (points[pointIdx]) {
+                        const point = points[pointIdx];
+                        cell.append('line')
+                            .attr('class', 'connector')
+                            .attr('x1', point.x)
+                            .attr('y1', point.y)
+                            .attr('x2', centroid[0])
+                            .attr('y2', centroid[1])
+                            .style('stroke', getColorForIndex(pointIdx))
+                            .style('stroke-width', 1)
+                            .style('stroke-dasharray', '3,2')
+                            .style('opacity', 0.6);
+                    }
                 }
             }
         });
@@ -217,21 +244,75 @@ document.addEventListener('DOMContentLoaded', function() {
         // For each set of points, create a cell polygon using a convex hull
         Object.keys(cellsByPointSet).forEach((pointSet, idx) => {
             const pixelPoints = cellsByPointSet[pointSet];
+            const contributingPoints = pointSet.split('-').map(Number);
             
             // Use D3's polygon hull to create a convex hull around the points
             if (pixelPoints.length > 2) {
                 const hull = d3.polygonHull(pixelPoints);
                 
                 if (hull) {
+                    // Calculate centroid for label placement
+                    const centroid = getCentroid(hull);
+                    
                     // Add the cell polygon to the diagram
-                    cellsGroup.append('polygon')
+                    const cell = cellsGroup.append('g')
+                        .attr('class', 'voronoi-cell-group')
+                        .attr('data-point-set', contributingPoints.map(i => i + 1).join(','));
+                        
+                    // Add the polygon
+                    cell.append('polygon')
                         .attr('class', 'voronoi-cell')
                         .attr('points', hull.map(p => p.join(',')).join(' '))
                         .style('fill', getColorForIndex(idx))
-                        .style('opacity', '0.4');
+                        .style('opacity', '0.4')
+                        .style('stroke', getColorForIndex(idx))
+                        .style('stroke-width', 1)
+                        .style('stroke-opacity', 0.7);
+                    
+                    // Add cell label to show which points contribute to this cell
+                    cell.append('text')
+                        .attr('class', 'cell-label')
+                        .attr('x', centroid[0])
+                        .attr('y', centroid[1])
+                        .attr('text-anchor', 'middle')
+                        .attr('dominant-baseline', 'middle')
+                        .style('font-size', '11px')
+                        .style('font-weight', 'bold')
+                        .style('fill', '#333')
+                        .text(contributingPoints.map(i => i + 1).join(','));
+                        
+                    // Add connecting lines from points to cell
+                    contributingPoints.forEach(pointIdx => {
+                        if (points[pointIdx]) {
+                            const point = points[pointIdx];
+                            cell.append('line')
+                                .attr('class', 'connector')
+                                .attr('x1', point.x)
+                                .attr('y1', point.y)
+                                .attr('x2', centroid[0])
+                                .attr('y2', centroid[1])
+                                .style('stroke', getColorForIndex(pointIdx))
+                                .style('stroke-width', 1)
+                                .style('stroke-dasharray', '3,2')
+                                .style('opacity', 0.5);
+                        }
+                    });
                 }
             }
         });
+    }
+    
+    // Calculate the centroid of a polygon
+    function getCentroid(points) {
+        let x = 0;
+        let y = 0;
+        
+        points.forEach(p => {
+            x += p[0];
+            y += p[1];
+        });
+        
+        return [x / points.length, y / points.length];
     }
     
     // Get a color for a specific index
@@ -246,14 +327,35 @@ document.addEventListener('DOMContentLoaded', function() {
     
     // Render the points
     function renderPoints() {
-        pointsGroup.selectAll('.point')
+        // Create point groups
+        const pointElements = pointsGroup.selectAll('.point-group')
             .data(points)
             .enter()
-            .append('circle')
+            .append('g')
+            .attr('class', 'point-group')
+            .attr('transform', d => `translate(${d.x}, ${d.y})`);
+            
+        // Add circles
+        pointElements.append('circle')
             .attr('class', 'point')
-            .attr('cx', d => d.x)
-            .attr('cy', d => d.y)
-            .attr('r', 5);
+            .attr('cx', 0)
+            .attr('cy', 0)
+            .attr('r', 6)
+            .style('fill', (d, i) => getColorForIndex(i))
+            .style('stroke', 'white')
+            .style('stroke-width', 2);
+            
+        // Add point number labels
+        pointElements.append('text')
+            .attr('class', 'point-label')
+            .attr('text-anchor', 'middle')
+            .attr('dominant-baseline', 'central')
+            .attr('dy', 0.5)
+            .style('fill', 'white')
+            .style('font-size', '10px')
+            .style('font-weight', 'bold')
+            .style('pointer-events', 'none')
+            .text((d, i) => i + 1);
     }
     
     // Add a point when the canvas is clicked
