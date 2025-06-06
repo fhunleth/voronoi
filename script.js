@@ -373,23 +373,7 @@ document.addEventListener('DOMContentLoaded', function() {
             const y = centerY + radius * Math.sin(startAngle + i * angle);
             newPoints.push({ x, y });
         }
-        
-        return newPoints;
-    }
-    
-    // Generate points in a circular arrangement
-    function createCircleOfPoints(count, radius) {
-        const centerX = width / 2;
-        const centerY = height / 2;
-        const angle = 2 * Math.PI / count;
-        const newPoints = [];
-        
-        for (let i = 0; i < count; i++) {
-            const x = centerX + radius * Math.cos(i * angle);
-            const y = centerY + radius * Math.sin(i * angle);
-            newPoints.push({ x, y });
-        }
-        
+
         return newPoints;
     }
     
@@ -448,8 +432,8 @@ document.addEventListener('DOMContentLoaded', function() {
             case 'hexagon':
                 points = createRegularPolygon(6, radius);
                 break;
-            case 'circle':
-                points = createCircleOfPoints(12, radius);
+            case 'dodecagon':
+                points = createRegularPolygon(12, radius);
                 break;
             case 'grid':
                 points = createGridOfPoints(4, 4);

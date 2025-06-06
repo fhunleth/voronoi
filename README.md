@@ -19,7 +19,7 @@ A web-based interactive tool for creating and exploring Voronoi diagrams with di
   - Square
   - Pentagon
   - Hexagon
-  - Circle (12 points)
+  - Dodecagon
   - Grid (4×4)
   - Random (10 points)
 - **Visual Indicators**: Points and cells are color-coded with connecting lines to show relationships
