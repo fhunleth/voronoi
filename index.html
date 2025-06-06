@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Interactive Voronoi Diagram</title>
+    <link rel="stylesheet" href="styles.css">
+    <!-- D3.js is perfect for creating Voronoi diagrams -->
+    <script src="https://d3js.org/d3.v7.min.js"></script>
+</head>
+<body>
+    <header>
+        <h1>Interactive Voronoi Diagram</h1>
+    </header>
+
+    <main>
+        <div class="controls">
+            <div class="control-group">
+                <div class="metric-control">
+                    <label for="distance-metric">Distance Metric:</label>
+                    <select id="distance-metric">
+                        <option value="euclidean" selected>Euclidean</option>
+                        <option value="manhattan">Manhattan</option>
+                        <option value="minkowski">Minkowski</option>
+                    </select>
+                </div>
+                <div class="p-value" id="p-value-container">
+                    <label for="p-value">P Value:</label>
+                    <input type="number" id="p-value" min="1" max="10" value="2" step="1">
+                    <span class="tooltip">P=1 for Manhattan, P=2 for Euclidean</span>
+                </div>
+            </div>
+            <div class="order-control">
+                <label for="order">Voronoi Order:</label>
+                <input type="number" id="order" min="1" max="5" value="1" step="1">
+                <span class="tooltip">Order defines the nth nearest neighbor diagram (1=standard)</span>
+                <span class="tooltip" id="order-limit">Limited by the number of points (max = points-1)</span>
+            </div>
+            <div class="buttons">
+                <button id="clear-button">Clear Points</button>
+            </div>
+            <div class="info">
+                <p>Click on the canvas to add points</p>
+                <p id="points-count">Points: 0</p>
+            </div>
+        </div>
+
+        <div class="canvas-container">
+            <svg id="voronoi-canvas"></svg>
+        </div>
+    </main>
+
+    <footer>
+        <p>Voronoi Diagram Generator - <span id="current-year"></span></p>
+    </footer>
+
+    <script src="script.js"></script>
+</body>
+</html>
