@@ -2,7 +2,9 @@
 
 A web-based interactive tool for creating and exploring Voronoi diagrams with different distance metrics and orders.
 
-![Voronoi Diagram](https://i.imgur.com/placeholder.jpg)
+**[Try it now on GitHub Pages!](https://fhunleth.github.io/voronoi/)**
+
+![Voronoi Diagram Screenshot](https://raw.githubusercontent.com/fhunleth/voronoi/main/screenshot.png)
 
 ## Features
 
@@ -44,11 +46,19 @@ The choice of distance metric affects how "distance" between points is calculate
 
 ## How to Use
 
-1. Open `index.html` in a modern web browser
-2. Click on the canvas to add points manually, or select a predefined shape
-3. Adjust the distance metric and P-value settings
-4. Change the Voronoi order to explore higher-order diagrams
-5. Observe how the cells change and relate to the points
+### Online Version
+1. Visit [https://fhunleth.github.io/voronoi/](https://fhunleth.github.io/voronoi/)
+2. No installation required - works directly in your browser!
+
+### Local Version
+1. Clone this repository or download the files
+2. Open `index.html` in any modern web browser
+
+### Usage Instructions
+1. Click on the canvas to add points manually, or select a predefined shape
+2. Adjust the distance metric and P-value settings
+3. Change the Voronoi order to explore higher-order diagrams
+4. Observe how the cells change and relate to the points
 
 ## Implementation Details
 
