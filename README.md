@@ -1,5 +1,7 @@
 # Interactive Voronoi Diagram Generator
 
+[![Tests](https://github.com/fhunleth/voronoi/actions/workflows/tests.yml/badge.svg)](https://github.com/fhunleth/voronoi/actions/workflows/tests.yml)
+
 A web-based interactive tool for creating and exploring Voronoi diagrams with different distance metrics and orders.
 
 **[Try it now on GitHub Pages!](https://fhunleth.github.io/voronoi/)**
@@ -80,6 +82,42 @@ To modify or enhance this project:
    - `styles.css`: Visual styling
    - `script.js`: Voronoi diagram logic and interactivity
 3. Refresh the browser to see your changes
+
+### Testing
+
+This project includes tests for its core functionality:
+
+```bash
+# Install dependencies (first time only)
+npm install
+
+# Run direct tests (simpler, more reliable)
+npm run test:direct
+
+# Run Jest tests (with coverage)
+npm test
+
+# Generate a visual HTML test report
+npm run test:report
+```
+
+The direct tests verify:
+- Distance calculation functions (Euclidean, Manhattan, Minkowski, Hilbert)
+- Shape generation (regular polygons, grids, etc.)
+- Geometric helper functions (centroid calculations)
+
+These tests ensure that the mathematical foundation of the Voronoi diagram generation works correctly.
+
+The visual HTML test report provides a comprehensive view of all test results with a user-friendly interface. After running `npm run test:report`, open `test-report.html` in your browser to see the detailed results.
+
+#### Adding More Tests
+
+To add more tests or extend existing ones:
+
+1. Modify the `test/direct-test.js` file to include your new tests
+2. Run `npm run test:direct` to verify your changes
+
+For visual or complex DOM-related tests, use manual testing in the browser.
 
 ## Future Enhancements
 

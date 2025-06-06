@@ -1,0 +1,32 @@
+{
+  "name": "voronoi",
+  "version": "1.0.0",
+  "description": "A web-based interactive tool for creating and exploring Voronoi diagrams with different distance metrics and orders.",
+  "main": "capture-screenshot.js",
+  "directories": {
+    "test": "test"
+  },
+  "scripts": {
+    "test": "jest",
+    "test:coverage": "jest --coverage",
+    "test:direct": "node test/direct-test.js",
+    "test:report": "node test/generate-report.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/fhunleth/voronoi.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "CC0-1.0",
+  "type": "commonjs",
+  "bugs": {
+    "url": "https://github.com/fhunleth/voronoi/issues"
+  },
+  "homepage": "https://github.com/fhunleth/voronoi#readme",
+  "devDependencies": {
+    "@testing-library/dom": "^10.4.0",
+    "jest": "^29.7.0",
+    "jest-environment-jsdom": "^30.0.0-beta.3"
+  }
+}

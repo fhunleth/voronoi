@@ -1,3 +1,13 @@
+// Try to import core functions if in a module environment
+let voronoiCore;
+if (typeof require !== 'undefined') {
+    try {
+        voronoiCore = require('./src/voronoi-core');
+    } catch (e) {
+        console.log('Running in browser environment');
+    }
+}
+
 document.addEventListener('DOMContentLoaded', function() {
     // Set current year in the footer
     document.getElementById('current-year').textContent = new Date().getFullYear();
@@ -383,18 +393,19 @@ document.addEventListener('DOMContentLoaded', function() {
         return newPoints;
     }
     
-    // Generate points in a grid arrangement
+    // Generate points in a grid pattern
     function createGridOfPoints(rows, cols) {
         const marginX = width * 0.15;
         const marginY = height * 0.15;
-        const stepX = (width - 2 * marginX) / (cols - 1);
-        const stepY = (height - 2 * marginY) / (rows - 1);
         const newPoints = [];
         
-        for (let row = 0; row < rows; row++) {
-            for (let col = 0; col < cols; col++) {
-                const x = marginX + col * stepX;
-                const y = marginY + row * stepY;
+        const cellWidth = (width - 2 * marginX) / (cols - 1);
+        const cellHeight = (height - 2 * marginY) / (rows - 1);
+        
+        for (let i = 0; i < rows; i++) {
+            for (let j = 0; j < cols; j++) {
+                const x = marginX + j * cellWidth;
+                const y = marginY + i * cellHeight;
                 newPoints.push({ x, y });
             }
         }
