@@ -358,6 +358,115 @@ document.addEventListener('DOMContentLoaded', function() {
             .text((d, i) => i + 1);
     }
     
+    // Generate points in a regular polygon shape
+    function createRegularPolygon(sides, radius) {
+        const centerX = width / 2;
+        const centerY = height / 2;
+        const angle = 2 * Math.PI / sides;
+        const newPoints = [];
+        
+        // Start from the top (270 degrees or -90 degrees)
+        const startAngle = -Math.PI / 2;
+        
+        for (let i = 0; i < sides; i++) {
+            const x = centerX + radius * Math.cos(startAngle + i * angle);
+            const y = centerY + radius * Math.sin(startAngle + i * angle);
+            newPoints.push({ x, y });
+        }
+        
+        return newPoints;
+    }
+    
+    // Generate points in a circular arrangement
+    function createCircleOfPoints(count, radius) {
+        const centerX = width / 2;
+        const centerY = height / 2;
+        const angle = 2 * Math.PI / count;
+        const newPoints = [];
+        
+        for (let i = 0; i < count; i++) {
+            const x = centerX + radius * Math.cos(i * angle);
+            const y = centerY + radius * Math.sin(i * angle);
+            newPoints.push({ x, y });
+        }
+        
+        return newPoints;
+    }
+    
+    // Generate points in a grid arrangement
+    function createGridOfPoints(rows, cols) {
+        const marginX = width * 0.15;
+        const marginY = height * 0.15;
+        const stepX = (width - 2 * marginX) / (cols - 1);
+        const stepY = (height - 2 * marginY) / (rows - 1);
+        const newPoints = [];
+        
+        for (let row = 0; row < rows; row++) {
+            for (let col = 0; col < cols; col++) {
+                const x = marginX + col * stepX;
+                const y = marginY + row * stepY;
+                newPoints.push({ x, y });
+            }
+        }
+        
+        return newPoints;
+    }
+    
+    // Generate random points
+    function createRandomPoints(count) {
+        const marginX = width * 0.1;
+        const marginY = height * 0.1;
+        const newPoints = [];
+        
+        for (let i = 0; i < count; i++) {
+            const x = marginX + Math.random() * (width - 2 * marginX);
+            const y = marginY + Math.random() * (height - 2 * marginY);
+            newPoints.push({ x, y });
+        }
+        
+        return newPoints;
+    }
+    
+    // Apply the selected predefined shape
+    function applyPredefinedShape() {
+        const shapeType = document.getElementById('predefined-shape').value;
+        const radius = Math.min(width, height) * 0.4;
+        
+        // Clear existing points
+        points = [];
+        
+        switch (shapeType) {
+            case 'triangle':
+                points = createRegularPolygon(3, radius);
+                break;
+            case 'square':
+                points = createRegularPolygon(4, radius);
+                break;
+            case 'pentagon':
+                points = createRegularPolygon(5, radius);
+                break;
+            case 'hexagon':
+                points = createRegularPolygon(6, radius);
+                break;
+            case 'circle':
+                points = createCircleOfPoints(12, radius);
+                break;
+            case 'grid':
+                points = createGridOfPoints(4, 4);
+                break;
+            case 'random':
+                points = createRandomPoints(10);
+                break;
+            default:
+                // Custom points - do nothing
+                break;
+        }
+        
+        // Reset order to 1 when changing shapes
+        document.getElementById('order').value = 1;
+        updateVoronoi();
+    }
+
     // Add a point when the canvas is clicked
     svgElement.addEventListener('click', function(event) {
         const rect = svgElement.getBoundingClientRect();
@@ -365,6 +474,10 @@ document.addEventListener('DOMContentLoaded', function() {
         const y = event.clientY - rect.top;
         
         points.push({ x, y });
+        
+        // Set selector back to "Custom Points"
+        document.getElementById('predefined-shape').value = 'none';
+        
         updateVoronoi();
     });
     
@@ -373,7 +486,16 @@ document.addEventListener('DOMContentLoaded', function() {
         points = [];
         // Reset order to 1 when clearing points
         document.getElementById('order').value = 1;
+        
+        // Set selector back to "Custom Points"
+        document.getElementById('predefined-shape').value = 'none';
+        
         updateVoronoi();
+    });
+    
+    // Apply predefined shape
+    document.getElementById('apply-shape').addEventListener('click', function() {
+        applyPredefinedShape();
     });
     
     // Update when order is changed

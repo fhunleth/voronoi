@@ -88,10 +88,28 @@ button {
     cursor: pointer;
     font-weight: 500;
     transition: background-color 0.2s;
+    white-space: nowrap;
 }
 
 button:hover {
     background-color: #2980b9;
+}
+
+#apply-shape {
+    margin-left: 8px;
+    background-color: #27ae60;
+}
+
+#apply-shape:hover {
+    background-color: #219653;
+}
+
+#clear-button {
+    background-color: #e74c3c;
+}
+
+#clear-button:hover {
+    background-color: #c0392b;
 }
 
 .canvas-container {
@@ -150,6 +168,30 @@ footer {
     font-weight: bold;
 }
 
+.shape-control {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.explanation {
+    margin-top: 30px;
+    padding: 20px;
+    background-color: #f8f9fa;
+    border: 1px solid #dee2e6;
+    border-radius: 5px;
+}
+
+.explanation h3 {
+    margin-top: 0;
+    color: #2c3e50;
+    margin-bottom: 15px;
+}
+
+.explanation p {
+    margin-bottom: 10px;
+}
+
 @media (max-width: 768px) {
     .controls {
         flex-direction: column;
@@ -159,6 +201,11 @@ footer {
 
     .control-group {
         width: 100%;
+    }
+
+    .shape-control {
+        flex-wrap: wrap;
+        margin-bottom: 10px;
     }
 
     .info {

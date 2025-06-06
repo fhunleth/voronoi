@@ -36,6 +36,20 @@
                 <span class="tooltip">Order defines the nth nearest neighbor diagram (1=standard)</span>
                 <span class="tooltip" id="order-limit">Limited by the number of points (max = points-1)</span>
             </div>
+            <div class="shape-control">
+                <label for="predefined-shape">Predefined Shapes:</label>
+                <select id="predefined-shape">
+                    <option value="none" selected>Custom Points</option>
+                    <option value="triangle">Equilateral Triangle</option>
+                    <option value="square">Square</option>
+                    <option value="pentagon">Pentagon</option>
+                    <option value="hexagon">Hexagon</option>
+                    <option value="circle">Circle</option>
+                    <option value="grid">Grid</option>
+                    <option value="random">Random (10 points)</option>
+                </select>
+                <button id="apply-shape">Apply Shape</button>
+            </div>
             <div class="buttons">
                 <button id="clear-button">Clear Points</button>
             </div>
@@ -47,6 +61,24 @@
 
         <div class="canvas-container">
             <svg id="voronoi-canvas"></svg>
+        </div>
+        
+        <div class="explanation">
+            <h3>Understanding the Diagram</h3>
+            <p>
+                <strong>Points:</strong> Numbered circles on the diagram. Each point has a unique number and color.
+            </p>
+            <p>
+                <strong>Cells:</strong> Colored regions represent Voronoi cells. Each cell in a first-order diagram
+                contains all points that are closer to a specific point than to any other point.
+            </p>
+            <p>
+                <strong>Connections:</strong> Dashed lines show the relationship between points and their cells.
+            </p>
+            <p>
+                <strong>Higher-order diagrams:</strong> When the order is greater than 1, cells show numbers indicating
+                the set of points that are the n closest points for that region.
+            </p>
         </div>
     </main>
 
