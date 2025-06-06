@@ -97,6 +97,12 @@ document.addEventListener('DOMContentLoaded', function() {
                     Math.pow(Math.abs(y1 - y2), pValue),
                     1 / pValue
                 );
+            case 'hilbert':
+                // Hilbert metric (maximum of the ratios)
+                // For a normalized space, we use the canvas dimensions as the bounding box
+                const dx = Math.abs(x1 - x2);
+                const dy = Math.abs(y1 - y2);
+                return Math.max(dx / width, dy / height) * Math.min(width, height);
             default:
                 return Math.sqrt(Math.pow(x1 - x2, 2) + Math.pow(y1 - y2, 2));
         }
