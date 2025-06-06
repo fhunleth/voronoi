@@ -82,7 +82,7 @@ Potential improvements for future versions:
 
 ## License
 
-MIT License - Feel free to use, modify, and distribute this code.
+CC0 (Creative Commons Zero) - This work is dedicated to the public domain. You can copy, modify, distribute and perform the work, even for commercial purposes, all without asking permission.
 
 ## Created
 
