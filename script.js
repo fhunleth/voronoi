@@ -17,12 +17,12 @@ document.addEventListener('DOMContentLoaded', function() {
     const svgRect = svgElement.getBoundingClientRect();
     const width = svgRect.width;
     const height = svgRect.height;
-    
+
     // Initialize D3 SVG
     const svg = d3.select('#voronoi-canvas')
         .attr('width', width)
         .attr('height', height);
-    
+
     // State variables
     let points = [];
     let distanceMetric = "euclidean"; // Default distance metric
@@ -33,50 +33,50 @@ document.addEventListener('DOMContentLoaded', function() {
     // Create group elements for cells and points
     const cellsGroup = svg.append('g').attr('class', 'cells');
     const pointsGroup = svg.append('g').attr('class', 'points');
-    
+
     // Create distance overlay
     const distanceContainer = d3.select('body')
         .append('div')
         .attr('class', 'distance-overlay')
         .style('display', 'none');
-    
+
     // Initialize the UI
     updatePValueVisibility();
-    
+
     // Get the current settings
     function getSettings() {
         distanceMetric = document.getElementById('distance-metric').value;
         pValue = parseInt(document.getElementById('p-value').value, 10);
         voronoiOrder = parseInt(document.getElementById('order').value, 10);
     }
-    
+
     // Toggle P-value input visibility based on selected distance metric
     function updatePValueVisibility() {
         const pValueContainer = document.getElementById('p-value-container');
         pValueContainer.style.display = document.getElementById('distance-metric').value === 'minkowski' ? 'block' : 'none';
     }
-    
+
     // Update the Voronoi diagram
     function updateVoronoi() {
         // Clear existing cells and points
         cellsGroup.selectAll('*').remove();
         pointsGroup.selectAll('*').remove();
-        
+
         // Update points count
         document.getElementById('points-count').textContent = `Points: ${points.length}`;
-        
+
         // Update max order based on number of points
         updateMaxOrder();
-        
+
         // Get current settings
         getSettings();
-        
+
         // If fewer than 3 points, just render the points
         if (points.length < 3) {
             renderPoints();
             return;
         }
-        
+
         // Generate Voronoi diagram
         if (voronoiOrder === 1) {
             // For standard first-order Voronoi, use distance-based approach
@@ -86,21 +86,21 @@ document.addEventListener('DOMContentLoaded', function() {
             generateHigherOrderVoronoi();
         }
     }
-    
+
     // Update the max Voronoi order based on the number of points
     function updateMaxOrder() {
         const orderInput = document.getElementById('order');
         const maxOrder = Math.max(1, points.length - 1);
-        
+
         // Update the max attribute
         orderInput.max = maxOrder;
-        
+
         // If current value exceeds max, adjust it
         if (parseInt(orderInput.value, 10) > maxOrder) {
             orderInput.value = maxOrder;
         }
     }
-    
+
     // Calculate distance between two points based on the selected distance metric
     function calculateDistance(x1, y1, x2, y2) {
         switch(distanceMetric) {
@@ -110,7 +110,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 return Math.sqrt(Math.pow(x1 - x2, 2) + Math.pow(y1 - y2, 2));
             case 'minkowski':
                 return Math.pow(
-                    Math.pow(Math.abs(x1 - x2), pValue) + 
+                    Math.pow(Math.abs(x1 - x2), pValue) +
                     Math.pow(Math.abs(y1 - y2), pValue),
                     1 / pValue
                 );
@@ -124,32 +124,32 @@ document.addEventListener('DOMContentLoaded', function() {
                 return Math.sqrt(Math.pow(x1 - x2, 2) + Math.pow(y1 - y2, 2));
         }
     }
-    
+
     // Generate standard (first-order) Voronoi diagram
     function generateFirstOrderVoronoi() {
         // First, render the points
         renderPoints();
-        
+
         // Create a grid of sample points to test distances
         const resolution = 2; // Pixels between sample points
         const cellData = [];
-        
+
         for (let x = 0; x < width; x += resolution) {
             for (let y = 0; y < height; y += resolution) {
                 // For each pixel, find the closest site
                 let minDist = Infinity;
                 let closestPoint = null;
-                
+
                 points.forEach((point, index) => {
                     // Use the selected distance metric
                     const dist = calculateDistance(point.x, point.y, x, y);
-                    
+
                     if (dist < minDist) {
                         minDist = dist;
                         closestPoint = index;
                     }
                 });
-                
+
                 if (closestPoint !== null) {
                     // Add this pixel to the cell data
                     cellData.push({
@@ -160,7 +160,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 }
             }
         }
-        
+
         // Group the pixels by their closest point
         const cellsByPoint = {};
         cellData.forEach(pixel => {
@@ -169,25 +169,25 @@ document.addEventListener('DOMContentLoaded', function() {
             }
             cellsByPoint[pixel.pointIndex].push([pixel.x, pixel.y]);
         });
-        
+
         // For each point, create a cell polygon using a convex hull
         Object.keys(cellsByPoint).forEach(pointIndex => {
             const pixelPoints = cellsByPoint[pointIndex];
             const pointIdx = parseInt(pointIndex, 10);
-            
+
             // Use D3's polygon hull to create a convex hull around the points
             if (pixelPoints.length > 2) {
                 const hull = d3.polygonHull(pixelPoints);
-                
+
                 if (hull) {
                     // Calculate centroid for label placement
                     const centroid = getCentroid(hull);
-                    
+
                     // Add the cell polygon to the diagram
                     const cell = cellsGroup.append('g')
                         .attr('class', 'voronoi-cell-group')
                         .attr('data-point', pointIdx + 1);
-                        
+
                     // Add the polygon
                     cell.append('polygon')
                         .attr('class', 'voronoi-cell')
@@ -197,7 +197,7 @@ document.addEventListener('DOMContentLoaded', function() {
                         .style('stroke', getColorForIndex(pointIdx))
                         .style('stroke-width', 1)
                         .style('stroke-opacity', 0.7);
-                        
+
                     // Add connecting line from point to cell
                     if (points[pointIdx]) {
                         const point = points[pointIdx];
@@ -216,36 +216,36 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         });
     }
-    
+
     // Generate higher-order Voronoi diagram (n-th nearest neighbor)
     function generateHigherOrderVoronoi() {
         // First, render the points
         renderPoints();
-        
+
         // Create a grid of sample points to test distances
         const resolution = 3; // Slightly lower resolution for more complex diagrams
         const cellData = [];
-        
+
         for (let x = 0; x < width; x += resolution) {
             for (let y = 0; y < height; y += resolution) {
                 // For each pixel, find the n nearest points
                 const distances = [];
-                
+
                 points.forEach((point, index) => {
                     const dist = calculateDistance(point.x, point.y, x, y);
                     distances.push({ index, dist });
                 });
-                
+
                 // Sort by distance
                 distances.sort((a, b) => a.dist - b.dist);
-                
+
                 // Get the n-th nearest point (order - 1 as index is zero-based)
                 if (distances.length >= voronoiOrder) {
                     const nthPoint = distances[voronoiOrder - 1];
-                    
+
                     // Create a unique cell ID based on the set of n nearest points
                     const nearestPoints = distances.slice(0, voronoiOrder).map(d => d.index).sort().join('-');
-                    
+
                     cellData.push({
                         x: x,
                         y: y,
@@ -254,7 +254,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 }
             }
         }
-        
+
         // Group the pixels by their point set
         const cellsByPointSet = {};
         cellData.forEach(pixel => {
@@ -263,25 +263,25 @@ document.addEventListener('DOMContentLoaded', function() {
             }
             cellsByPointSet[pixel.pointSet].push([pixel.x, pixel.y]);
         });
-        
+
         // For each set of points, create a cell polygon using a convex hull
         Object.keys(cellsByPointSet).forEach((pointSet, idx) => {
             const pixelPoints = cellsByPointSet[pointSet];
             const contributingPoints = pointSet.split('-').map(Number);
-            
+
             // Use D3's polygon hull to create a convex hull around the points
             if (pixelPoints.length > 2) {
                 const hull = d3.polygonHull(pixelPoints);
-                
+
                 if (hull) {
                     // Calculate centroid for label placement
                     const centroid = getCentroid(hull);
-                    
+
                     // Add the cell polygon to the diagram
                     const cell = cellsGroup.append('g')
                         .attr('class', 'voronoi-cell-group')
                         .attr('data-point-set', contributingPoints.map(i => i + 1).join(','));
-                        
+
                     // Add the polygon
                     cell.append('polygon')
                         .attr('class', 'voronoi-cell')
@@ -291,7 +291,7 @@ document.addEventListener('DOMContentLoaded', function() {
                         .style('stroke', getColorForIndex(idx))
                         .style('stroke-width', 1)
                         .style('stroke-opacity', 0.7);
-                    
+
                     // Add cell label to show which points contribute to this cell
                     cell.append('text')
                         .attr('class', 'cell-label')
@@ -303,7 +303,7 @@ document.addEventListener('DOMContentLoaded', function() {
                         .style('font-weight', 'bold')
                         .style('fill', '#333')
                         .text(contributingPoints.map(i => i + 1).join(','));
-                        
+
                     // Add connecting lines from points to cell
                     contributingPoints.forEach(pointIdx => {
                         if (points[pointIdx]) {
@@ -324,20 +324,20 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         });
     }
-    
+
     // Calculate the centroid of a polygon
     function getCentroid(points) {
         let x = 0;
         let y = 0;
-        
+
         points.forEach(p => {
             x += p[0];
             y += p[1];
         });
-        
+
         return [x / points.length, y / points.length];
     }
-    
+
     // Get a color for a specific index
     function getColorForIndex(index) {
         const colors = [
@@ -347,7 +347,7 @@ document.addEventListener('DOMContentLoaded', function() {
         ];
         return colors[index % colors.length];
     }
-    
+
     // Render the points
     function renderPoints() {
         // Create point groups
@@ -357,7 +357,7 @@ document.addEventListener('DOMContentLoaded', function() {
             .append('g')
             .attr('class', 'point-group')
             .attr('transform', d => `translate(${d.x}, ${d.y})`);
-            
+
         // Add circles
         pointElements.append('circle')
             .attr('class', 'point')
@@ -367,7 +367,7 @@ document.addEventListener('DOMContentLoaded', function() {
             .style('fill', (d, i) => getColorForIndex(i))
             .style('stroke', 'white')
             .style('stroke-width', 2);
-            
+
         // Add point number labels
         pointElements.append('text')
             .attr('class', 'point-label')
@@ -380,17 +380,17 @@ document.addEventListener('DOMContentLoaded', function() {
             .style('pointer-events', 'none')
             .text((d, i) => i + 1);
     }
-    
+
     // Generate points in a regular polygon shape
     function createRegularPolygon(sides, radius) {
         const centerX = width / 2;
         const centerY = height / 2;
         const angle = 2 * Math.PI / sides;
         const newPoints = [];
-        
+
         // Start from the top (270 degrees or -90 degrees)
         const startAngle = -Math.PI / 2;
-        
+
         for (let i = 0; i < sides; i++) {
             const x = centerX + radius * Math.cos(startAngle + i * angle);
             const y = centerY + radius * Math.sin(startAngle + i * angle);
@@ -399,16 +399,16 @@ document.addEventListener('DOMContentLoaded', function() {
 
         return newPoints;
     }
-    
+
     // Generate points in a grid pattern
     function createGridOfPoints(rows, cols) {
         const marginX = width * 0.15;
         const marginY = height * 0.15;
         const newPoints = [];
-        
+
         const cellWidth = (width - 2 * marginX) / (cols - 1);
         const cellHeight = (height - 2 * marginY) / (rows - 1);
-        
+
         for (let i = 0; i < rows; i++) {
             for (let j = 0; j < cols; j++) {
                 const x = marginX + j * cellWidth;
@@ -416,33 +416,33 @@ document.addEventListener('DOMContentLoaded', function() {
                 newPoints.push({ x, y });
             }
         }
-        
+
         return newPoints;
     }
-    
+
     // Generate random points
     function createRandomPoints(count) {
         const marginX = width * 0.1;
         const marginY = height * 0.1;
         const newPoints = [];
-        
+
         for (let i = 0; i < count; i++) {
             const x = marginX + Math.random() * (width - 2 * marginX);
             const y = marginY + Math.random() * (height - 2 * marginY);
             newPoints.push({ x, y });
         }
-        
+
         return newPoints;
     }
-    
+
     // Apply the selected predefined shape
     function applyPredefinedShape() {
         const shapeType = document.getElementById('predefined-shape').value;
         const radius = Math.min(width, height) * 0.4;
-        
+
         // Clear existing points
         points = [];
-        
+
         switch (shapeType) {
             case 'triangle':
                 points = createRegularPolygon(3, radius);
@@ -469,7 +469,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 // Custom points - do nothing
                 break;
         }
-        
+
         // Reset order to 1 when changing shapes
         document.getElementById('order').value = 1;
         updateVoronoi();
@@ -480,48 +480,48 @@ document.addEventListener('DOMContentLoaded', function() {
         const rect = svgElement.getBoundingClientRect();
         const x = event.clientX - rect.left;
         const y = event.clientY - rect.top;
-        
+
         points.push({ x, y });
-        
+
         // Set selector back to "Custom Points"
         document.getElementById('predefined-shape').value = 'none';
-        
+
         updateVoronoi();
     });
-    
+
     // Clear all points
     document.getElementById('clear-button').addEventListener('click', function() {
         points = [];
         // Reset order to 1 when clearing points
         document.getElementById('order').value = 1;
-        
+
         // Set selector back to "Custom Points"
         document.getElementById('predefined-shape').value = 'none';
-        
+
         updateVoronoi();
     });
-    
+
     // Apply predefined shape
     document.getElementById('apply-shape').addEventListener('click', function() {
         applyPredefinedShape();
     });
-    
+
     // Update when order is changed
     document.getElementById('order').addEventListener('change', function() {
         updateVoronoi();
     });
-    
+
     // Update when distance metric is changed
     document.getElementById('distance-metric').addEventListener('change', function() {
         updatePValueVisibility();
         updateVoronoi();
     });
-    
+
     // Update when p-value is changed
     document.getElementById('p-value').addEventListener('change', function() {
         updateVoronoi();
     });
-    
+
     // Toggle distance display
     document.getElementById('show-distances').addEventListener('change', function() {
         showDistances = this.checked;
@@ -529,63 +529,63 @@ document.addEventListener('DOMContentLoaded', function() {
             distanceContainer.style('display', 'none');
         }
     });
-    
+
     // Track mouse movement on canvas for distance display
     svgElement.addEventListener('mousemove', function(event) {
         if (!showDistances || points.length === 0) {
             return;
         }
-        
+
         const rect = svgElement.getBoundingClientRect();
         const mouseX = event.clientX - rect.left;
         const mouseY = event.clientY - rect.top;
-        
+
         // Update the position of the distance overlay
         distanceContainer
             .style('display', 'block')
             .style('left', (event.clientX + 15) + 'px')
             .style('top', (event.clientY + 15) + 'px');
-        
+
         // Calculate and display distances
         updateDistanceDisplay(mouseX, mouseY);
     });
-    
+
     // Hide distance overlay when mouse leaves the canvas
     svgElement.addEventListener('mouseleave', function() {
         distanceContainer.style('display', 'none');
     });
-    
+
     // Calculate and display distances from cursor to each point
     function updateDistanceDisplay(mouseX, mouseY) {
         // Get current settings
         getSettings();
-        
+
         // Calculate distances to each point
         const distances = points.map((point, index) => {
             const dist = calculateDistance(mouseX, mouseY, point.x, point.y, distanceMetric, pValue, width, height);
-            return { 
-                pointIndex: index + 1, 
+            return {
+                pointIndex: index + 1,
                 distance: dist,
                 color: getColorForIndex(index)
             };
         });
-        
+
         // Sort by distance (closest first)
         distances.sort((a, b) => a.distance - b.distance);
-        
+
         // Update the distance overlay content
         let html = `<div style="font-weight:bold;margin-bottom:5px;">Distances (${distanceMetric}):</div>`;
-        
+
         distances.forEach(d => {
             html += `<div class="distance-item">
                 <span class="distance-point-number" style="color:${d.color}">Point ${d.pointIndex}:</span>
                 <span class="distance-value">${d.distance.toFixed(2)}</span>
             </div>`;
         });
-        
+
         distanceContainer.html(html);
     }
-    
+
     // Handle window resize
     window.addEventListener('resize', function() {
         const svgRect = svgElement.getBoundingClientRect();

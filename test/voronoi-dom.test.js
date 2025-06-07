@@ -61,7 +61,7 @@ describe('DOM Integration Tests', () => {
   beforeEach(() => {
     // Clear all document.getElementById mock calls
     document.getElementById.mockClear();
-    
+
     // Reset any mocks on voronoiCore functions
     Object.keys(voronoiCore).forEach(key => {
       if (typeof voronoiCore[key] === 'function' && voronoiCore[key].mockReset) {
@@ -81,10 +81,10 @@ describe('DOM Integration Tests', () => {
   test('createRegularPolygon creates the correct number of points', () => {
     const points3 = voronoiCore.createRegularPolygon(3, 100);
     expect(points3.length).toBe(3);
-    
+
     const points4 = voronoiCore.createRegularPolygon(4, 100);
     expect(points4.length).toBe(4);
-    
+
     const points12 = voronoiCore.createRegularPolygon(12, 100);
     expect(points12.length).toBe(12);
   });
@@ -92,17 +92,17 @@ describe('DOM Integration Tests', () => {
   test('points are placed at the correct radius from center', () => {
     const radius = 100;
     const points = voronoiCore.createRegularPolygon(6, radius);
-    
+
     const centerX = 800 / 2; // Default width / 2
     const centerY = 600 / 2; // Default height / 2
-    
+
     points.forEach(point => {
       // Calculate distance from center
       const distance = Math.sqrt(
-        Math.pow(point.x - centerX, 2) + 
+        Math.pow(point.x - centerX, 2) +
         Math.pow(point.y - centerY, 2)
       );
-      
+
       // Should be within 0.1 pixels of the specified radius
       expect(distance).toBeCloseTo(radius, 1);
     });

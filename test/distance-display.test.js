@@ -22,20 +22,20 @@ describe('Distance Display Tests', () => {
             addEventListener: jest.fn(),
             dispatchEvent: jest.fn()
         };
-        
+
         showDistancesCheckbox = {
             checked: false,
             showDistances: false,
             addEventListener: jest.fn(),
             dispatchEvent: jest.fn()
         };
-        
+
         distanceContainer = {
             style: { display: 'none' },
             html: jest.fn()
         };
     });
-    
+
     afterEach(() => {
         // Clean up
         jest.restoreAllMocks();

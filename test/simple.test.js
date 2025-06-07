@@ -15,7 +15,7 @@ test('createGridOfPoints function exists', () => {
 test('createRegularPolygon creates correct number of points', () => {
   const triangle = voronoiCore.createRegularPolygon(3, 100);
   expect(triangle.length).toBe(3);
-  
+
   const square = voronoiCore.createRegularPolygon(4, 100);
   expect(square.length).toBe(4);
 });
