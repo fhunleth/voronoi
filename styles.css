@@ -192,6 +192,48 @@ footer {
     margin-bottom: 10px;
 }
 
+/* Distance toggle styling */
+.distance-toggle {
+    display: flex;
+    align-items: center;
+    margin-top: 10px;
+    font-size: 0.9rem;
+}
+
+.distance-toggle input {
+    margin-right: 5px;
+}
+
+/* Distance overlay styling */
+.distance-overlay {
+    position: absolute;
+    background-color: rgba(255, 255, 255, 0.85);
+    padding: 5px 10px;
+    border-radius: 4px;
+    font-size: 0.85rem;
+    border: 1px solid #dee2e6;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+    pointer-events: none; /* Let mouse events pass through */
+    z-index: 10;
+    max-width: 200px;
+}
+
+.distance-item {
+    display: flex;
+    justify-content: space-between;
+    margin: 2px 0;
+    font-family: monospace;
+}
+
+.distance-point-number {
+    margin-right: 8px;
+    font-weight: bold;
+}
+
+.distance-value {
+    text-align: right;
+}
+
 @media (max-width: 768px) {
     .controls {
         flex-direction: column;

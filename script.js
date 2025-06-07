@@ -28,10 +28,17 @@ document.addEventListener('DOMContentLoaded', function() {
     let distanceMetric = "euclidean"; // Default distance metric
     let pValue = 2; // Default p-value for Minkowski distance
     let voronoiOrder = 1; // Default to standard (first-order) Voronoi diagram
+    let showDistances = false; // Whether to show distances from cursor to each point
 
     // Create group elements for cells and points
     const cellsGroup = svg.append('g').attr('class', 'cells');
     const pointsGroup = svg.append('g').attr('class', 'points');
+    
+    // Create distance overlay
+    const distanceContainer = d3.select('body')
+        .append('div')
+        .attr('class', 'distance-overlay')
+        .style('display', 'none');
     
     // Initialize the UI
     updatePValueVisibility();
@@ -514,6 +521,70 @@ document.addEventListener('DOMContentLoaded', function() {
     document.getElementById('p-value').addEventListener('change', function() {
         updateVoronoi();
     });
+    
+    // Toggle distance display
+    document.getElementById('show-distances').addEventListener('change', function() {
+        showDistances = this.checked;
+        if (!showDistances) {
+            distanceContainer.style('display', 'none');
+        }
+    });
+    
+    // Track mouse movement on canvas for distance display
+    svgElement.addEventListener('mousemove', function(event) {
+        if (!showDistances || points.length === 0) {
+            return;
+        }
+        
+        const rect = svgElement.getBoundingClientRect();
+        const mouseX = event.clientX - rect.left;
+        const mouseY = event.clientY - rect.top;
+        
+        // Update the position of the distance overlay
+        distanceContainer
+            .style('display', 'block')
+            .style('left', (event.clientX + 15) + 'px')
+            .style('top', (event.clientY + 15) + 'px');
+        
+        // Calculate and display distances
+        updateDistanceDisplay(mouseX, mouseY);
+    });
+    
+    // Hide distance overlay when mouse leaves the canvas
+    svgElement.addEventListener('mouseleave', function() {
+        distanceContainer.style('display', 'none');
+    });
+    
+    // Calculate and display distances from cursor to each point
+    function updateDistanceDisplay(mouseX, mouseY) {
+        // Get current settings
+        getSettings();
+        
+        // Calculate distances to each point
+        const distances = points.map((point, index) => {
+            const dist = calculateDistance(mouseX, mouseY, point.x, point.y, distanceMetric, pValue, width, height);
+            return { 
+                pointIndex: index + 1, 
+                distance: dist,
+                color: getColorForIndex(index)
+            };
+        });
+        
+        // Sort by distance (closest first)
+        distances.sort((a, b) => a.distance - b.distance);
+        
+        // Update the distance overlay content
+        let html = `<div style="font-weight:bold;margin-bottom:5px;">Distances (${distanceMetric}):</div>`;
+        
+        distances.forEach(d => {
+            html += `<div class="distance-item">
+                <span class="distance-point-number" style="color:${d.color}">Point ${d.pointIndex}:</span>
+                <span class="distance-value">${d.distance.toFixed(2)}</span>
+            </div>`;
+        });
+        
+        distanceContainer.html(html);
+    }
     
     // Handle window resize
     window.addEventListener('resize', function() {

@@ -1,4 +1,10 @@
 // Setup file for Jest tests
+const { TextEncoder, TextDecoder } = require('util');
+
+// Provide TextEncoder and TextDecoder for JSDOM
+global.TextEncoder = TextEncoder;
+global.TextDecoder = TextDecoder;
+
 // Mock D3.js
 global.d3 = {
   select: jest.fn(() => ({
