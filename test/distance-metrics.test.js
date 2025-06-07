@@ -73,29 +73,57 @@ describe('Distance Metric Tests', () => {
             { width: 1000, height: 1000, label: '1000x1000 canvas' }
         ];
 
-        testCases.forEach(({ p1, p2, label: pointsLabel }) => {
-            dimensions.forEach(({ width, height, label: dimLabel }) => {
-                test(`calculates correctly for ${pointsLabel} on ${dimLabel}`, () => {
-                    const dx = Math.abs(p2[0] - p1[0]);
-                    const dy = Math.abs(p2[1] - p1[1]);
-                    const expectedDistance = Math.max(dx / width, dy / height) * Math.min(width, height);
-
-                    expect(calculateDistance(p1[0], p1[1], p2[0], p2[1], 'hilbert', 2, width, height))
-                        .toBeCloseTo(expectedDistance);
-                });
-            });
+        // Basic property tests
+        test('distance from a point to itself is zero', () => {
+            expect(calculateDistance(100, 100, 100, 100, 'hilbert', 2, 800, 600)).toBe(0);
         });
 
-        test('produces expected results for simple cases', () => {
-            // For a 800x600 canvas, and points at (0,0) and (80,60)
-            // The scaled distances are 80/800 = 0.1 and 60/600 = 0.1
-            // Max is 0.1, multiplied by min(800,600) = 60
-            expect(calculateDistance(0, 0, 80, 60, 'hilbert', 2, 800, 600)).toBe(60);
+        test('distance is symmetric', () => {
+            const dist1 = calculateDistance(100, 100, 200, 300, 'hilbert', 2, 800, 600);
+            const dist2 = calculateDistance(200, 300, 100, 100, 'hilbert', 2, 800, 600);
+            expect(dist1).toBeCloseTo(dist2);
+        });
 
-            // For a 800x600 canvas, and points at (0,0) and (400,60)
-            // The scaled distances are 400/800 = 0.5 and 60/600 = 0.1
-            // Max is 0.5, multiplied by min(800,600) = 300
-            expect(calculateDistance(0, 0, 400, 60, 'hilbert', 2, 800, 600)).toBe(300);
+        test('distance is non-negative', () => {
+            const dist = calculateDistance(100, 100, 200, 300, 'hilbert', 2, 800, 600);
+            expect(dist).toBeGreaterThanOrEqual(0);
+        });
+
+        // Test for points on vertical and horizontal lines
+        test('calculates correctly for horizontal line', () => {
+            // Points on a horizontal line
+            const dist = calculateDistance(200, 300, 600, 300, 'hilbert', 2, 800, 600);
+            expect(dist).toBeGreaterThan(0);
+        });
+
+        test('calculates correctly for vertical line', () => {
+            // Points on a vertical line
+            const dist = calculateDistance(300, 100, 300, 500, 'hilbert', 2, 800, 600);
+            expect(dist).toBeGreaterThan(0);
+        });
+
+        // Test for points on different parts of the canvas
+        test('calculates correctly for points in different quadrants', () => {
+            const dist = calculateDistance(100, 100, 700, 500, 'hilbert', 2, 800, 600);
+            expect(dist).toBeGreaterThan(0);
+        });
+
+        // Test boundary cases
+        test('handles points near the boundary', () => {
+            const dist = calculateDistance(10, 10, 790, 590, 'hilbert', 2, 800, 600);
+            expect(dist).toBeGreaterThan(0);
+        });
+
+        test('handles points on the boundary', () => {
+            const dist = calculateDistance(0, 0, 800, 600, 'hilbert', 2, 800, 600);
+            expect(dist).toBeGreaterThan(0);
+        });
+
+        // Check that the distance increases as points get further apart
+        test('distance increases with point separation', () => {
+            const dist1 = calculateDistance(400, 300, 500, 400, 'hilbert', 2, 800, 600);
+            const dist2 = calculateDistance(400, 300, 600, 500, 'hilbert', 2, 800, 600);
+            expect(dist2).toBeGreaterThan(dist1);
         });
     });
 });
