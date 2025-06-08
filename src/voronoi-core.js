@@ -34,95 +34,121 @@ function calculateDistance(x1, y1, x2, y2, distanceMetric = 'euclidean', pValue 
                 1 / pValue
             );
         case 'hilbert':
-            // Hilbert metric calculation
-            // For two points P1(x1,y1) and P2(x2,y2), we need to:
-            // 1. Find the line through P1 and P2
-            // 2. Find where this line intersects the boundary (B1 and B2)
-            // 3. Calculate the cross-ratio and take ln of it
+            // For points in a rectangle, the Hilbert distance is a projective metric
+            // that approaches infinity as points get closer to the boundary.
 
             // If points are the same, distance is 0
             if (x1 === x2 && y1 === y2) return 0;
-            
-            // Find the line equation: y = mx + b
-            const m = (y2 - y1) / (x2 - x1 || 0.000001); // Avoid division by zero
-            const b = y1 - m * x1;
-            
-            // Find intersections with the canvas boundary
+
+            // First compute how close each point is to the boundary
+            // The closer to the boundary, the larger the distance should be
+
+            // Normalized coordinates (from 0 to 1)
+            const nx1 = x1 / width;
+            const ny1 = y1 / height;
+            const nx2 = x2 / width;
+            const ny2 = y2 / height;
+
+            // Distance to each boundary for each point
+            const d1Left = nx1;                  // distance from P1 to left edge
+            const d1Right = 1 - nx1;             // distance from P1 to right edge
+            const d1Top = ny1;                   // distance from P1 to top edge
+            const d1Bottom = 1 - ny1;            // distance from P1 to bottom edge
+            const d1Min = Math.min(d1Left, d1Right, d1Top, d1Bottom);  // closest boundary
+
+            const d2Left = nx2;                  // distance from P2 to left edge
+            const d2Right = 1 - nx2;             // distance from P2 to right edge
+            const d2Top = ny2;                   // distance from P2 to top edge
+            const d2Bottom = 1 - ny2;            // distance from P2 to bottom edge
+            const d2Min = Math.min(d2Left, d2Right, d2Top, d2Bottom);  // closest boundary
+
+            // The Hilbert metric should go to infinity as points get closer to the boundary
+            // We'll compute it based on the standard cross-ratio formula
+
+            // Find the line through the points
+            const m = (ny2 - ny1) / ((nx2 - nx1) || 0.000001); // slope with division-by-zero protection
+            const b = ny1 - m * nx1;  // y-intercept
+
+            // Find where this line intersects the unit square boundaries (in normalized coords)
             const intersections = [];
-            
-            // Left boundary: x = 0
-            const leftY = b;
-            if (leftY >= 0 && leftY <= height) {
-                intersections.push([0, leftY]);
+
+            // Left boundary (x = 0)
+            if (b >= 0 && b <= 1) {
+                intersections.push([0, b]);
             }
-            
-            // Right boundary: x = width
-            const rightY = m * width + b;
-            if (rightY >= 0 && rightY <= height) {
-                intersections.push([width, rightY]);
+
+            // Right boundary (x = 1)
+            const rightY = m + b;
+            if (rightY >= 0 && rightY <= 1) {
+                intersections.push([1, rightY]);
             }
-            
-            // Top boundary: y = 0
-            const topX = -b / m;
-            if (topX >= 0 && topX <= width) {
-                intersections.push([topX, 0]);
+
+            // Top boundary (y = 0)
+            if (Math.abs(m) > 0.000001) { // avoid division by near-zero
+                const topX = -b / m;
+                if (topX >= 0 && topX <= 1) {
+                    intersections.push([topX, 0]);
+                }
             }
-            
-            // Bottom boundary: y = height
-            const bottomX = (height - b) / m;
-            if (bottomX >= 0 && bottomX <= width) {
-                intersections.push([bottomX, height]);
+
+            // Bottom boundary (y = 1)
+            if (Math.abs(m) > 0.000001) { // avoid division by near-zero
+                const bottomX = (1 - b) / m;
+                if (bottomX >= 0 && bottomX <= 1) {
+                    intersections.push([bottomX, 1]);
+                }
             }
-            
-            // If we don't have at least 2 intersections, return Euclidean distance
+
+            // If we don't have at least 2 intersections, the line doesn't cross the square
+            // In this case, use a different approach
             if (intersections.length < 2) {
-                return Math.sqrt(Math.pow(x2 - x1, 2) + Math.pow(y2 - y1, 2));
+                // Use scaled Euclidean distance and scale it based on proximity to boundary
+                const euclideanDist = Math.sqrt(
+                    Math.pow(nx2 - nx1, 2) + Math.pow(ny2 - ny1, 2)
+                );
+                const boundaryFactor = 1 / (Math.min(d1Min, d2Min) + 0.01);
+                return euclideanDist * boundaryFactor * Math.min(width, height);
             }
-            
-            // Sort intersections by distance from P1 to determine B1 and B2
+
+            // Compute the projection vector (direction of the line)
+            const dx = nx2 - nx1;
+            const dy = ny2 - ny1;
+            const lineDist = Math.sqrt(dx * dx + dy * dy);
+            const dirX = dx / lineDist;
+            const dirY = dy / lineDist;
+
+            // Sort intersections by their projection onto the line
             intersections.sort((a, b) => {
-                const distA = Math.sqrt(Math.pow(a[0] - x1, 2) + Math.pow(a[1] - y1, 2));
-                const distB = Math.sqrt(Math.pow(b[0] - x1, 2) + Math.pow(b[1] - y1, 2));
-                return distA - distB;
-            });
-            
-            // We need to sort intersections based on the line through P1 and P2
-            // Let's compute the vector from P1 to P2
-            const dx = x2 - x1;
-            const dy = y2 - y1;
-            const dist = Math.sqrt(dx * dx + dy * dy);
-            
-            // Unit vector in direction of the line
-            const unitDx = dx / dist;
-            const unitDy = dy / dist;
-            
-            // Sort intersections by projection onto the line through P1 and P2
-            intersections.sort((a, b) => {
-                // Project vector from P1 to intersection point onto unit direction vector
-                const projA = (a[0] - x1) * unitDx + (a[1] - y1) * unitDy;
-                const projB = (b[0] - x1) * unitDx + (b[1] - y1) * unitDy;
+                const projA = (a[0] - nx1) * dirX + (a[1] - ny1) * dirY;
+                const projB = (b[0] - nx1) * dirX + (b[1] - ny1) * dirY;
                 return projA - projB;
             });
-            
-            // B1 is the leftmost intersection, B2 is the rightmost
-            const [b1x, b1y] = intersections[0];
-            const [b2x, b2y] = intersections[intersections.length - 1];
-            
-            // Calculate Euclidean distances
-            const D11 = Math.sqrt(Math.pow(x1 - b1x, 2) + Math.pow(y1 - b1y, 2)); // P1 to B1
-            const D12 = Math.sqrt(Math.pow(x1 - b2x, 2) + Math.pow(y1 - b2y, 2)); // P1 to B2
-            const D21 = Math.sqrt(Math.pow(x2 - b1x, 2) + Math.pow(y2 - b1y, 2)); // P2 to B1
-            const D22 = Math.sqrt(Math.pow(x2 - b2x, 2) + Math.pow(y2 - b2y, 2)); // P2 to B2
-            
-            // Check to make sure none of the distances are zero (which would happen if a point is on the boundary)
-            if (D11 === 0 || D12 === 0 || D21 === 0 || D22 === 0) {
-                // Fall back to Euclidean distance
-                return Math.sqrt(Math.pow(x2 - x1, 2) + Math.pow(y2 - y1, 2));
+
+            // We need the two intersections that bracket our points on the line
+            const B1 = intersections[0];              // First intersection
+            const B2 = intersections[intersections.length - 1]; // Last intersection
+
+            // Calculate distances (in normalized coordinates)
+            const D11 = Math.sqrt(Math.pow(nx1 - B1[0], 2) + Math.pow(ny1 - B1[1], 2)); // P1 to B1
+            const D12 = Math.sqrt(Math.pow(nx1 - B2[0], 2) + Math.pow(ny1 - B2[1], 2)); // P1 to B2
+            const D21 = Math.sqrt(Math.pow(nx2 - B1[0], 2) + Math.pow(ny2 - B1[1], 2)); // P2 to B1
+            const D22 = Math.sqrt(Math.pow(nx2 - B2[0], 2) + Math.pow(ny2 - B2[1], 2)); // P2 to B2
+
+            // Handle small distances that could cause numeric issues
+            const epsilon = 0.000001;
+            if (D11 < epsilon || D12 < epsilon || D21 < epsilon || D22 < epsilon) {
+                // If a point is very close to the boundary, the distance should be very large
+                return 100000 / (Math.min(D11, D12, D21, D22) + epsilon);
             }
-            
-            // Calculate Hilbert distance: 0.5 * ln((D12/D22) * (D21/D11))
-            // Use absolute value to ensure the result is positive
-            return Math.abs(0.5 * Math.log((D12 / D22) * (D21 / D11)));
+
+            // Hilbert distance formula: 0.5 * ln((D12/D22) * (D21/D11))
+            // This is the cross-ratio formula
+            const crossRatio = (D12 * D21) / (D22 * D11);
+            const hilbertDist = 0.5 * Math.abs(Math.log(crossRatio));
+
+            // Scale back to original coordinate space
+            const scaleFactor = Math.min(width, height);
+            return hilbertDist * scaleFactor;
         default:
             return Math.sqrt(Math.pow(x1 - x2, 2) + Math.pow(y1 - y2, 2));
     }
