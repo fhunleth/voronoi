@@ -4,9 +4,10 @@
 
 A web-based interactive tool for creating and exploring Voronoi diagrams with different distance metrics and orders.
 
-**[Try it now on GitHub Pages!](https://fhunleth.github.io/voronoi/)**
+*Note from the human: This is an experiment. There are some significant bugs that I haven't
+asked Claude to fix. Sanity check before drawing conclusions.*
 
-![Voronoi Diagram Screenshot](https://raw.githubusercontent.com/fhunleth/voronoi/main/screenshot.png)
+**[Try it now on GitHub Pages!](https://fhunleth.github.io/voronoi/)**
 
 ## Features
 
